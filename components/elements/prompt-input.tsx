@@ -78,7 +78,7 @@ export const PromptInputTextarea = ({
           : resizeOnNewLinesOnly
             ? "field-sizing-fixed"
             : "field-sizing-content max-h-[6lh]",
-        "bg-transparent dark:bg-transparent",
+        "bg-transparent",
         "focus-visible:ring-0",
         className,
       )}

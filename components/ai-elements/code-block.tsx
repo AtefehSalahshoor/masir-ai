@@ -58,18 +58,11 @@ export async function highlightCode(
     ? [lineNumberTransformer]
     : [];
 
-  return await Promise.all([
-    codeToHtml(code, {
-      lang: language,
-      theme: "one-light",
-      transformers,
-    }),
-    codeToHtml(code, {
-      lang: language,
-      theme: "one-dark-pro",
-      transformers,
-    }),
-  ]);
+  return await codeToHtml(code, {
+    lang: language,
+    theme: "one-light",
+    transformers,
+  });
 }
 
 export const CodeBlock = ({
@@ -81,14 +74,12 @@ export const CodeBlock = ({
   ...props
 }: CodeBlockProps) => {
   const [html, setHtml] = useState<string>("");
-  const [darkHtml, setDarkHtml] = useState<string>("");
   const mounted = useRef(false);
 
   useEffect(() => {
-    highlightCode(code, language, showLineNumbers).then(([light, dark]) => {
+    highlightCode(code, language, showLineNumbers).then((highlighted) => {
       if (!mounted.current) {
-        setHtml(light);
-        setDarkHtml(dark);
+        setHtml(highlighted);
         mounted.current = true;
       }
     });
@@ -109,14 +100,9 @@ export const CodeBlock = ({
       >
         <div className="relative">
           <div
-            className="overflow-auto dark:hidden [&>pre]:m-0 [&>pre]:bg-background! [&>pre]:p-4 [&>pre]:text-foreground! [&>pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
+            className="overflow-auto [&>pre]:m-0 [&>pre]:bg-background! [&>pre]:p-4 [&>pre]:text-foreground! [&>pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
             // biome-ignore lint/security/noDangerouslySetInnerHtml: "this is needed."
             dangerouslySetInnerHTML={{ __html: html }}
-          />
-          <div
-            className="hidden overflow-auto dark:block [&>pre]:m-0 [&>pre]:bg-background! [&>pre]:p-4 [&>pre]:text-foreground! [&>pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: "this is needed."
-            dangerouslySetInnerHTML={{ __html: darkHtml }}
           />
           {children && (
             <div className="absolute top-2 right-2 flex items-center gap-2">

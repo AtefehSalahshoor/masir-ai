@@ -4,10 +4,7 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
 import { createContext, useContext, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  oneDark,
-  oneLight,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +41,7 @@ export const CodeBlock = ({
     >
       <div className="relative">
         <SyntaxHighlighter
-          className="overflow-hidden dark:hidden"
+          className="overflow-hidden"
           codeTagProps={{
             className: "font-mono text-sm",
           }}
@@ -66,32 +63,6 @@ export const CodeBlock = ({
           }}
           showLineNumbers={showLineNumbers}
           style={oneLight}
-        >
-          {code}
-        </SyntaxHighlighter>
-        <SyntaxHighlighter
-          className="hidden overflow-hidden dark:block"
-          codeTagProps={{
-            className: "font-mono text-sm",
-          }}
-          customStyle={{
-            margin: 0,
-            padding: "1rem",
-            fontSize: "0.875rem",
-            background: "hsl(var(--background))",
-            color: "hsl(var(--foreground))",
-            overflowX: "auto",
-            overflowWrap: "break-word",
-            wordBreak: "break-all",
-          }}
-          language={language}
-          lineNumberStyle={{
-            color: "hsl(var(--muted-foreground))",
-            paddingRight: "1rem",
-            minWidth: "2.5rem",
-          }}
-          showLineNumbers={showLineNumbers}
-          style={oneDark}
         >
           {code}
         </SyntaxHighlighter>

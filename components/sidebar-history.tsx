@@ -344,7 +344,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
               You have reached the end of your chat history.
             </div>
           ) : (
-            <div className="mt-8 flex flex-row items-center gap-2 p-2 text-zinc-500 dark:text-zinc-400">
+            <div className="mt-8 flex flex-row items-center gap-2 p-2 text-zinc-500">
               <div className="animate-spin">
                 <LoaderIcon />
               </div>

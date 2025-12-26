@@ -170,7 +170,7 @@ export const ModelSelectorLogo = ({
 }: ModelSelectorLogoProps) => (
   <Image
     alt={`${provider} logo`}
-    className={cn("size-3 dark:invert", className)}
+    className={cn("size-3", className)}
     height={12}
     src={`https://models.dev/logos/${provider}.svg`}
     unoptimized
@@ -186,7 +186,7 @@ export const ModelSelectorLogoGroup = ({
 }: ModelSelectorLogoGroupProps) => (
   <div
     className={cn(
-      "-space-x-1 flex shrink-0 items-center [&>img]:rounded-full [&>img]:bg-background [&>img]:p-px [&>img]:ring-1 dark:[&>img]:bg-foreground",
+      "-space-x-1 flex shrink-0 items-center [&>img]:rounded-full [&>img]:bg-background [&>img]:p-px [&>img]:ring-1",
       className,
     )}
     {...props}
