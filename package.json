@@ -17,7 +17,8 @@
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test",
-    "release": "npx standard-version"
+    "release": "npx standard-version",
+    "prepare": "husky"
   },
   "dependencies": {
     "@ai-sdk/gateway": "2.0.0-beta.85",
@@ -114,6 +115,7 @@
     "@types/react-dom": "^18.3.7",
     "@types/react-syntax-highlighter": "^15.5.13",
     "drizzle-kit": "^0.25.0",
+    "husky": "^9.1.7",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",
