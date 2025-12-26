@@ -133,7 +133,7 @@ const PurePreviewMessage = ({
                       data-testid="message-content"
                       style={
                         message.role === "user"
-                          ? { backgroundColor: "hsl(24, 95%, 53%)" }
+                          ? { backgroundColor: "hsl(15, 100%, 55%)" }
                           : undefined
                       }
                     >

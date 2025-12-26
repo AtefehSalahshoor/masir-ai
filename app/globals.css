@@ -8,43 +8,43 @@
 @plugin "tailwindcss-animate";
 @plugin "@tailwindcss/typography";
 
-/* define design tokens (orange theme) */
+/* define design tokens (bold creative orange theme) */
 :root {
-  --background: hsl(0 0% 100%);
+  --background: hsl(30 10% 98%);
   --foreground: hsl(240 10% 3.9%);
   --card: hsl(0 0% 100%);
   --card-foreground: hsl(240 10% 3.9%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(240 10% 3.9%);
-  --primary: hsl(24 95% 53%);
+  --primary: hsl(15 100% 55%);
   --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(24 20% 95%);
+  --secondary: hsl(20 15% 96%);
   --secondary-foreground: hsl(240 5.9% 10%);
-  --muted: hsl(24 20% 95%);
+  --muted: hsl(20 15% 96%);
   --muted-foreground: hsl(240 3.8% 46.1%);
-  --accent: hsl(24 90% 65%);
+  --accent: hsl(35 90% 60%);
   --accent-foreground: hsl(240 5.9% 10%);
   --destructive: hsl(0 84.2% 60.2%);
   --destructive-foreground: hsl(0 0% 98%);
-  --border: hsl(24 50% 80%);
-  --input: hsl(24 50% 80%);
-  --ring: hsl(24 95% 53%);
-  --chart-1: hsl(24 95% 53%);
-  --chart-2: hsl(24 80% 60%);
-  --chart-3: hsl(24 70% 50%);
-  --chart-4: hsl(24 60% 65%);
-  --chart-5: hsl(24 50% 55%);
-  --sidebar-background: hsl(0 0% 98%);
+  --border: hsl(20 60% 75%);
+  --input: hsl(20 60% 75%);
+  --ring: hsl(15 100% 55%);
+  --chart-1: hsl(15 100% 55%);
+  --chart-2: hsl(35 90% 60%);
+  --chart-3: hsl(25 85% 50%);
+  --chart-4: hsl(30 80% 65%);
+  --chart-5: hsl(20 75% 55%);
+  --sidebar-background: hsl(30 8% 99%);
   --sidebar-foreground: hsl(240 5.3% 26.1%);
-  --sidebar-primary: hsl(24 95% 53%);
+  --sidebar-primary: hsl(15 100% 55%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(24 20% 95%);
+  --sidebar-accent: hsl(20 15% 96%);
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
-  --sidebar-border: hsl(24 50% 80%);
-  --sidebar-ring: hsl(24 95% 53%);
+  --sidebar-border: hsl(20 60% 75%);
+  --sidebar-ring: hsl(15 100% 55%);
   /* border radius unit */
   --radius: 0.5rem;
-  --sidebar: hsl(0 0% 98%);
+  --sidebar: hsl(30 8% 99%);
 }
 
 /* define theme */
