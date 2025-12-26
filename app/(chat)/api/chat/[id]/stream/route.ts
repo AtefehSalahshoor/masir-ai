@@ -13,7 +13,7 @@ import { getStreamContext } from "../../route";
 
 export async function GET(
   _: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: chatId } = await params;
 
@@ -63,12 +63,11 @@ export async function GET(
   }
 
   const emptyDataStream = createUIMessageStream<ChatMessage>({
-    // biome-ignore lint/suspicious/noEmptyBlockStatements: "Needs to exist"
     execute: () => {},
   });
 
   const stream = await streamContext.resumableStream(recentStreamId, () =>
-    emptyDataStream.pipeThrough(new JsonToSseTransformStream())
+    emptyDataStream.pipeThrough(new JsonToSseTransformStream()),
   );
 
   /*
@@ -105,7 +104,7 @@ export async function GET(
 
     return new Response(
       restoredStream.pipeThrough(new JsonToSseTransformStream()),
-      { status: 200 }
+      { status: 200 },
     );
   }
 

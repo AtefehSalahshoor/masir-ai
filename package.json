@@ -6,8 +6,9 @@
     "dev": "next dev --turbo",
     "build": "tsx lib/db/migrate && next build",
     "start": "next start",
-    "lint": "npx ultracite@latest check",
-    "format": "npx ultracite@latest fix",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
@@ -115,8 +116,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "ultracite": "5.3.9"
+    "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@9.12.3"
 }

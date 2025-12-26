@@ -52,7 +52,7 @@ export function getStreamContext() {
     } catch (error: any) {
       if (error.message.includes("REDIS_URL")) {
         console.log(
-          " > Resumable streams are disabled due to missing REDIS_URL"
+          " > Resumable streams are disabled due to missing REDIS_URL",
         );
       } else {
         console.error(error);
@@ -214,7 +214,7 @@ export async function POST(request: Request) {
         dataStream.merge(
           result.toUIMessageStream({
             sendReasoning: true,
-          })
+          }),
         );
       },
       generateId: generateUUID,
@@ -270,7 +270,7 @@ export async function POST(request: Request) {
       try {
         const resumableStream = await streamContext.resumableStream(
           streamId,
-          () => stream.pipeThrough(new JsonToSseTransformStream())
+          () => stream.pipeThrough(new JsonToSseTransformStream()),
         );
         if (resumableStream) {
           return new Response(resumableStream);
@@ -292,7 +292,7 @@ export async function POST(request: Request) {
     if (
       error instanceof Error &&
       error.message?.includes(
-        "AI Gateway requires a valid credit card on file to service requests"
+        "AI Gateway requires a valid credit card on file to service requests",
       )
     ) {
       return new ChatSDKError("bad_request:activate_gateway").toResponse();

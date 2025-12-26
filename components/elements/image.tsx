@@ -12,14 +12,13 @@ export const Image = ({
   mediaType,
   ...props
 }: ImageProps) => (
-  // biome-ignore lint/nursery/useImageSize: "Generated image without explicit size"
   // biome-ignore lint/performance/noImgElement: "Generated image without explicit size"
   <img
     {...props}
     alt={props.alt}
     className={cn(
       "h-auto max-w-full overflow-hidden rounded-md",
-      props.className
+      props.className,
     )}
     src={`data:${mediaType};base64,${base64}`}
   />
