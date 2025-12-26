@@ -7,9 +7,10 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chat.vercel.ai"),
-  title: "Next.js Chatbot Template",
-  description: "Next.js chatbot template using the AI SDK.",
+  metadataBase: new URL("https://masir-ai.vercel.app/"),
+  title: "Masir AI",
+  description:
+    "In Masir, you simply tell the AI what you want to achieve. It checks if your goal is realistic, breaks it into achievable daily steps, and sends gentle reminders. Instead of overwhelming users, Masir organizes their progress and keeps them consistent. A University project by Atefeh Salahshoor Goolan at Media University of Berlin.",
 };
 
 export const viewport = {
