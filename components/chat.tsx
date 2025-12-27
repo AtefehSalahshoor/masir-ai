@@ -71,6 +71,7 @@ export function Chat({
   const [input, setInput] = useState<string>("");
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
+  const [showGoals, setShowGoals] = useState(true);
   const currentModelIdRef = useRef(currentModelId);
 
   useEffect(() => {
@@ -202,6 +203,8 @@ export function Chat({
           chatId={id}
           isReadonly={isReadonly}
           selectedVisibilityType={initialVisibilityType}
+          showGoals={showGoals}
+          onToggleGoals={() => setShowGoals(!showGoals)}
         />
 
         <Messages
@@ -213,6 +216,7 @@ export function Chat({
           regenerate={regenerate}
           selectedModelId={initialChatModel}
           setMessages={setMessages}
+          showGoals={showGoals}
           status={status}
           votes={votes}
         />

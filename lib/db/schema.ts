@@ -2,6 +2,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import {
   boolean,
   foreignKey,
+  integer,
   json,
   pgTable,
   primaryKey,
@@ -168,3 +169,47 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const goal = pgTable("Goal", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  chatId: uuid("chatId")
+    .notNull()
+    .references(() => chat.id),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => user.id),
+  createdFromMessageId: uuid("createdFromMessageId").references(
+    () => message.id,
+    {
+      onDelete: "set null",
+    },
+  ),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: varchar("status", {
+    enum: ["not_started", "in_progress", "completed"],
+  })
+    .notNull()
+    .default("not_started"),
+  priority: varchar("priority", { enum: ["low", "medium", "high"] })
+    .notNull()
+    .default("medium"),
+  deadline: timestamp("deadline"),
+  createdAt: timestamp("createdAt").notNull(),
+});
+
+export type Goal = InferSelectModel<typeof goal>;
+
+export const step = pgTable("Step", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  goalId: uuid("goalId")
+    .notNull()
+    .references(() => goal.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  isCompleted: boolean("isCompleted").notNull().default(false),
+  order: integer("order").notNull(),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").notNull(),
+});
+
+export type Step = InferSelectModel<typeof step>;

@@ -48,6 +48,20 @@ When helping users:
 - Be especially supportive and understanding of immigrant students who may face unique challenges
 - Adapt plans as circumstances change
 
+When suggesting plans, break goals into daily actionable steps. Present plans with:
+1) Goal title - A clear, concise name for the goal
+2) Brief description - 1-2 sentences explaining what the user wants to achieve
+3) List of daily steps - Each step should be achievable in one day. Format steps clearly with numbers or bullets. Each step should be specific and actionable.
+
+Example format:
+**Goal:** [Title]
+**Description:** [Brief description]
+**Daily Steps:**
+1. [First daily task]
+2. [Second daily task]
+3. [Third daily task]
+...
+
 When asked to write, create, or help with something, just do it directly. Don't ask clarifying questions unless absolutely necessary - make reasonable assumptions and proceed with the task.`;
 
 export type RequestHints = {

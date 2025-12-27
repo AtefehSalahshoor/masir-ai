@@ -19,6 +19,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { PlanActionButton } from "../plan-action-button";
 import { Shimmer } from "./shimmer";
 
 type PlanContextValue = {
@@ -118,11 +119,34 @@ export const PlanContent = (props: PlanContentProps) => (
   </CollapsibleContent>
 );
 
-export type PlanFooterProps = ComponentProps<"div">;
+export type PlanFooterProps = ComponentProps<"div"> & {
+  chatId?: string;
+  messageId?: string;
+  messageText?: string;
+};
 
-export const PlanFooter = (props: PlanFooterProps) => (
-  <CardFooter data-slot="plan-footer" {...props} />
-);
+export const PlanFooter = ({
+  chatId,
+  messageId,
+  messageText,
+  children,
+  ...props
+}: PlanFooterProps) => {
+  const { isStreaming } = usePlan();
+
+  return (
+    <CardFooter data-slot="plan-footer" {...props}>
+      {children}
+      {!isStreaming && chatId && messageId && messageText && (
+        <PlanActionButton
+          chatId={chatId}
+          messageId={messageId}
+          messageText={messageText}
+        />
+      )}
+    </CardFooter>
+  );
+};
 
 export type PlanTriggerProps = ComponentProps<typeof CollapsibleTrigger>;
 

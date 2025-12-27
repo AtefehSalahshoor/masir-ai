@@ -23,8 +23,10 @@ import {
   chat,
   type DBMessage,
   document,
+  goal,
   message,
   type Suggestion,
+  step,
   stream,
   suggestion,
   type User,
@@ -597,6 +599,649 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       "bad_request:database",
       "Failed to get stream ids by chat id",
+    );
+  }
+}
+
+// Goal CRUD operations
+
+export async function createGoal({
+  chatId,
+  userId,
+  title,
+  description,
+  status,
+  priority,
+  deadline,
+  createdFromMessageId,
+}: {
+  chatId: string;
+  userId: string;
+  title: string;
+  description?: string | null;
+  status?: "not_started" | "in_progress" | "completed";
+  priority?: "low" | "medium" | "high";
+  deadline?: Date | null;
+  createdFromMessageId?: string | null;
+}) {
+  try {
+    if (!title.trim()) {
+      throw new ChatSDKError("bad_request:goal", "Title cannot be empty");
+    }
+
+    if (
+      status !== undefined &&
+      !["not_started", "in_progress", "completed"].includes(status)
+    ) {
+      throw new ChatSDKError("bad_request:goal", "Invalid status value");
+    }
+
+    if (
+      priority !== undefined &&
+      !["low", "medium", "high"].includes(priority)
+    ) {
+      throw new ChatSDKError("bad_request:goal", "Invalid priority value");
+    }
+
+    const [createdGoal] = await db
+      .insert(goal)
+      .values({
+        chatId,
+        userId,
+        title,
+        description: description ?? null,
+        status: status ?? "not_started",
+        priority: priority ?? "medium",
+        deadline: deadline ?? null,
+        createdFromMessageId: createdFromMessageId ?? null,
+        createdAt: new Date(),
+      })
+      .returning();
+
+    return createdGoal;
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError("bad_request:database", "Failed to create goal");
+  }
+}
+
+export async function getGoalsByUserId({
+  userId,
+  status: statusFilter,
+}: {
+  userId: string;
+  status?: "not_started" | "in_progress" | "completed";
+}) {
+  try {
+    const whereCondition = statusFilter
+      ? and(eq(goal.userId, userId), eq(goal.status, statusFilter))
+      : eq(goal.userId, userId);
+
+    return await db
+      .select()
+      .from(goal)
+      .where(whereCondition)
+      .orderBy(desc(goal.createdAt));
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get goals by user id",
+    );
+  }
+}
+
+export async function getGoalsByChatId({ chatId }: { chatId: string }) {
+  try {
+    return await db
+      .select()
+      .from(goal)
+      .where(eq(goal.chatId, chatId))
+      .orderBy(desc(goal.createdAt));
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Database error in getGoalsByChatId:", errorMessage);
+    throw new ChatSDKError(
+      "bad_request:database",
+      `Failed to get goals by chat id: ${errorMessage}`,
+    );
+  }
+}
+
+export async function getGoalById({ id }: { id: string }) {
+  try {
+    const [selectedGoal] = await db
+      .select()
+      .from(goal)
+      .where(eq(goal.id, id))
+      .limit(1);
+
+    return selectedGoal ?? null;
+  } catch (_error) {
+    throw new ChatSDKError("bad_request:database", "Failed to get goal by id");
+  }
+}
+
+export async function updateGoal({
+  id,
+  title,
+  description,
+  status,
+  priority,
+  deadline,
+}: {
+  id: string;
+  title?: string;
+  description?: string | null;
+  status?: "not_started" | "in_progress" | "completed";
+  priority?: "low" | "medium" | "high";
+  deadline?: Date | null;
+}) {
+  try {
+    const existingGoal = await getGoalById({ id });
+
+    if (!existingGoal) {
+      throw new ChatSDKError("not_found:goal", "Goal not found");
+    }
+
+    if (title !== undefined && !title.trim()) {
+      throw new ChatSDKError("bad_request:goal", "Title cannot be empty");
+    }
+
+    if (
+      status !== undefined &&
+      !["not_started", "in_progress", "completed"].includes(status)
+    ) {
+      throw new ChatSDKError("bad_request:goal", "Invalid status value");
+    }
+
+    if (
+      priority !== undefined &&
+      !["low", "medium", "high"].includes(priority)
+    ) {
+      throw new ChatSDKError("bad_request:goal", "Invalid priority value");
+    }
+
+    const updateData: {
+      title?: string;
+      description?: string | null;
+      status?: "not_started" | "in_progress" | "completed";
+      priority?: "low" | "medium" | "high";
+      deadline?: Date | null;
+    } = {};
+
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (status !== undefined) updateData.status = status;
+    if (priority !== undefined) updateData.priority = priority;
+    if (deadline !== undefined) updateData.deadline = deadline;
+
+    return await db.update(goal).set(updateData).where(eq(goal.id, id));
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError("bad_request:database", "Failed to update goal");
+  }
+}
+
+export async function deleteGoal({ id }: { id: string }) {
+  try {
+    const [deletedGoal] = await db
+      .delete(goal)
+      .where(eq(goal.id, id))
+      .returning();
+
+    return deletedGoal ?? null;
+  } catch (_error) {
+    throw new ChatSDKError("bad_request:database", "Failed to delete goal");
+  }
+}
+
+// Step CRUD operations
+
+export async function createStep({
+  goalId,
+  title,
+  order: providedOrder,
+}: {
+  goalId: string;
+  title: string;
+  order?: number;
+}) {
+  try {
+    if (!title.trim()) {
+      throw new ChatSDKError("bad_request:goal", "Step title cannot be empty");
+    }
+
+    const goalExists = await getGoalById({ id: goalId });
+    if (!goalExists) {
+      throw new ChatSDKError("not_found:goal", "Goal not found");
+    }
+
+    let stepOrder = providedOrder;
+
+    if (stepOrder === undefined) {
+      const existingSteps = await db
+        .select({ order: step.order })
+        .from(step)
+        .where(eq(step.goalId, goalId));
+
+      const maxOrder =
+        existingSteps.length > 0
+          ? Math.max(...existingSteps.map((s) => s.order))
+          : -1;
+
+      stepOrder = maxOrder + 1;
+    }
+
+    const [createdStep] = await db
+      .insert(step)
+      .values({
+        goalId,
+        title,
+        order: stepOrder,
+        isCompleted: false,
+        createdAt: new Date(),
+      })
+      .returning();
+
+    return createdStep;
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError("bad_request:database", "Failed to create step");
+  }
+}
+
+export async function createSteps({
+  goalId,
+  steps: stepsData,
+}: {
+  goalId: string;
+  steps: Array<{ title: string; order?: number }>;
+}) {
+  try {
+    const existingSteps = await db
+      .select({ order: step.order })
+      .from(step)
+      .where(eq(step.goalId, goalId));
+
+    const maxOrder =
+      existingSteps.length > 0
+        ? Math.max(...existingSteps.map((s) => s.order))
+        : -1;
+
+    let currentOrder = maxOrder + 1;
+
+    const stepsToInsert = stepsData.map((stepData) => ({
+      goalId,
+      title: stepData.title,
+      order: stepData.order ?? currentOrder++,
+      isCompleted: false,
+      createdAt: new Date(),
+    }));
+
+    return await db.insert(step).values(stepsToInsert).returning();
+  } catch (_error) {
+    throw new ChatSDKError("bad_request:database", "Failed to create steps");
+  }
+}
+
+export async function getStepsByGoalId({ goalId }: { goalId: string }) {
+  try {
+    return await db
+      .select()
+      .from(step)
+      .where(eq(step.goalId, goalId))
+      .orderBy(asc(step.order));
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get steps by goal id",
+    );
+  }
+}
+
+export async function updateStep({
+  id,
+  title,
+  isCompleted,
+}: {
+  id: string;
+  title?: string;
+  isCompleted?: boolean;
+}) {
+  try {
+    const [existingStep] = await db
+      .select()
+      .from(step)
+      .where(eq(step.id, id))
+      .limit(1);
+
+    if (!existingStep) {
+      throw new ChatSDKError("not_found:goal", "Step not found");
+    }
+
+    if (title !== undefined && !title.trim()) {
+      throw new ChatSDKError("bad_request:goal", "Step title cannot be empty");
+    }
+
+    const updateData: {
+      title?: string;
+      isCompleted?: boolean;
+      completedAt?: Date | null;
+    } = {};
+
+    if (title !== undefined) updateData.title = title;
+    if (isCompleted !== undefined) {
+      updateData.isCompleted = isCompleted;
+      updateData.completedAt = isCompleted ? new Date() : null;
+    }
+
+    return await db.update(step).set(updateData).where(eq(step.id, id));
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError("bad_request:database", "Failed to update step");
+  }
+}
+
+export async function deleteStep({ id }: { id: string }) {
+  try {
+    return await db.transaction(async (tx) => {
+      const [deletedStep] = await tx
+        .select()
+        .from(step)
+        .where(eq(step.id, id))
+        .limit(1);
+
+      if (!deletedStep) {
+        return null;
+      }
+
+      await tx.delete(step).where(eq(step.id, id));
+
+      const remainingSteps = await tx
+        .select()
+        .from(step)
+        .where(eq(step.goalId, deletedStep.goalId))
+        .orderBy(asc(step.order));
+
+      for (let i = 0; i < remainingSteps.length; i++) {
+        await tx
+          .update(step)
+          .set({ order: i })
+          .where(eq(step.id, remainingSteps[i].id));
+      }
+
+      return deletedStep;
+    });
+  } catch (_error) {
+    throw new ChatSDKError("bad_request:database", "Failed to delete step");
+  }
+}
+
+export async function toggleStepCompletion({ id }: { id: string }) {
+  try {
+    const [currentStep] = await db
+      .select()
+      .from(step)
+      .where(eq(step.id, id))
+      .limit(1);
+
+    if (!currentStep) {
+      throw new ChatSDKError("not_found:goal", "Step not found");
+    }
+
+    const newCompletedState = !currentStep.isCompleted;
+
+    return await db
+      .update(step)
+      .set({
+        isCompleted: newCompletedState,
+        completedAt: newCompletedState ? new Date() : null,
+      })
+      .where(eq(step.id, id));
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to toggle step completion",
+    );
+  }
+}
+
+// Composite operations
+
+export async function createGoalWithSteps({
+  chatId,
+  userId,
+  title,
+  description,
+  status,
+  priority,
+  deadline,
+  createdFromMessageId,
+  steps: stepsData,
+}: {
+  chatId: string;
+  userId: string;
+  title: string;
+  description?: string | null;
+  status?: "not_started" | "in_progress" | "completed";
+  priority?: "low" | "medium" | "high";
+  deadline?: Date | null;
+  createdFromMessageId?: string | null;
+  steps: Array<{ title: string; order?: number }>;
+}) {
+  try {
+    return await db.transaction(async (tx) => {
+      const [createdGoal] = await tx
+        .insert(goal)
+        .values({
+          chatId,
+          userId,
+          title,
+          description: description ?? null,
+          status: status ?? "not_started",
+          priority: priority ?? "medium",
+          deadline: deadline ?? null,
+          createdFromMessageId: createdFromMessageId ?? null,
+          createdAt: new Date(),
+        })
+        .returning();
+
+      const stepsToInsert = stepsData.map((stepData, index) => ({
+        goalId: createdGoal.id,
+        title: stepData.title,
+        order: stepData.order ?? index,
+        isCompleted: false,
+        createdAt: new Date(),
+      }));
+
+      const createdSteps = await tx
+        .insert(step)
+        .values(stepsToInsert)
+        .returning();
+
+      return { goal: createdGoal, steps: createdSteps };
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Database error in createGoalWithSteps:", errorMessage);
+    throw new ChatSDKError(
+      "bad_request:database",
+      `Failed to create goal with steps: ${errorMessage}`,
+    );
+  }
+}
+
+export async function getGoalByIdWithSteps({ id }: { id: string }) {
+  try {
+    const selectedGoal = await getGoalById({ id });
+
+    if (!selectedGoal) {
+      return null;
+    }
+
+    const steps = await getStepsByGoalId({ goalId: selectedGoal.id });
+
+    return {
+      ...selectedGoal,
+      steps,
+    };
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get goal with steps",
+    );
+  }
+}
+
+// Flexibility and adaptation operations
+
+export async function reorderSteps({
+  goalId,
+  stepOrders,
+}: {
+  goalId: string;
+  stepOrders: Array<{ id: string; order: number }>;
+}) {
+  try {
+    return await db.transaction(async (tx) => {
+      for (const { id: stepId, order: newOrder } of stepOrders) {
+        const [stepToUpdate] = await tx
+          .select()
+          .from(step)
+          .where(and(eq(step.id, stepId), eq(step.goalId, goalId)))
+          .limit(1);
+
+        if (!stepToUpdate) {
+          throw new ChatSDKError(
+            "not_found:goal",
+            `Step ${stepId} not found or does not belong to goal ${goalId}`,
+          );
+        }
+
+        await tx
+          .update(step)
+          .set({ order: newOrder })
+          .where(eq(step.id, stepId));
+      }
+    });
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError("bad_request:database", "Failed to reorder steps");
+  }
+}
+
+export async function bulkUpdateSteps({
+  goalId,
+  updates,
+}: {
+  goalId: string;
+  updates: Array<{
+    id: string;
+    title?: string;
+    isCompleted?: boolean;
+    order?: number;
+  }>;
+}) {
+  try {
+    return await db.transaction(async (tx) => {
+      for (const update of updates) {
+        const [stepToUpdate] = await tx
+          .select()
+          .from(step)
+          .where(and(eq(step.id, update.id), eq(step.goalId, goalId)))
+          .limit(1);
+
+        if (!stepToUpdate) {
+          throw new ChatSDKError(
+            "not_found:goal",
+            `Step ${update.id} not found or does not belong to goal ${goalId}`,
+          );
+        }
+
+        const updateData: {
+          title?: string;
+          isCompleted?: boolean;
+          completedAt?: Date | null;
+          order?: number;
+        } = {};
+
+        if (update.title !== undefined) updateData.title = update.title;
+        if (update.isCompleted !== undefined) {
+          updateData.isCompleted = update.isCompleted;
+          updateData.completedAt = update.isCompleted ? new Date() : null;
+        }
+        if (update.order !== undefined) updateData.order = update.order;
+
+        await tx.update(step).set(updateData).where(eq(step.id, update.id));
+      }
+    });
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to bulk update steps",
+    );
+  }
+}
+
+export async function getGoalProgress({ goalId }: { goalId: string }) {
+  try {
+    const steps = await getStepsByGoalId({ goalId });
+
+    const total = steps.length;
+    const completed = steps.filter((s) => s.isCompleted).length;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    return {
+      completed,
+      total,
+      percentage,
+    };
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get goal progress",
+    );
+  }
+}
+
+export async function getMessagesForGoalAdaptation({
+  goalId,
+}: {
+  goalId: string;
+}) {
+  try {
+    const selectedGoal = await getGoalById({ id: goalId });
+
+    if (!selectedGoal) {
+      throw new ChatSDKError("not_found:goal", "Goal not found");
+    }
+
+    const messages = await getMessagesByChatId({ id: selectedGoal.chatId });
+
+    return messages;
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get messages for goal adaptation",
     );
   }
 }
