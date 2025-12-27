@@ -32,19 +32,21 @@ export function PlanActionButton({
     );
     const description = descriptionMatch?.[1]?.trim() ?? null;
 
-    // Extract steps - look for numbered or bulleted lists after "Steps:" or "Daily Steps:"
-    const stepsMatch = text.match(
-      /(?:\*\*)?(?:Daily\s+)?Steps(?:\*\*)?:?\s*\n((?:\d+\.|[-*])\s*.+?(?:\n|$))+/is,
+    // Find the steps section - look for "Steps:" or "Daily Steps:" marker
+    const stepsSectionMatch = text.match(
+      /(?:\*\*)?(?:Daily\s+)?Steps(?:\*\*)?:?\s*\n(.+)/is,
     );
 
     let steps: Array<{ title: string }> = [];
 
-    if (stepsMatch) {
-      const stepsText = stepsMatch[1];
+    if (stepsSectionMatch) {
+      // Only extract from text AFTER the steps marker
+      const stepsText = stepsSectionMatch[1];
       const stepLines = stepsText
         .split(/\n/)
         .map((line) => line.trim())
         .filter((line) => {
+          // Only include lines that start with number or bullet
           const numbered = /^\d+\.\s*(.+)/.exec(line);
           const bulleted = /^[-*]\s*(.+)/.exec(line);
           return numbered || bulleted;
@@ -54,26 +56,40 @@ export function PlanActionButton({
           const bulleted = /^[-*]\s*(.+)/.exec(line);
           return numbered?.[1]?.trim() ?? bulleted?.[1]?.trim() ?? "";
         })
-        .filter((title) => title.length > 0);
+        .filter((title) => title.length > 0)
+        // Filter out steps that match goal title or description
+        .filter((title) => {
+          const titleLower = title.toLowerCase();
+          const goalTitleLower = goalTitle.toLowerCase();
+          const descriptionLower = description?.toLowerCase() ?? "";
+
+          // Exclude if step matches goal title or description
+          if (
+            titleLower === goalTitleLower ||
+            titleLower === descriptionLower
+          ) {
+            return false;
+          }
+
+          // Exclude if step contains goal title or description (to avoid partial matches)
+          if (
+            goalTitleLower.length > 5 &&
+            titleLower.includes(goalTitleLower)
+          ) {
+            return false;
+          }
+
+          if (
+            descriptionLower.length > 5 &&
+            titleLower.includes(descriptionLower)
+          ) {
+            return false;
+          }
+
+          return true;
+        });
 
       steps = stepLines.map((title) => ({ title }));
-    }
-
-    // Fallback: if no structured format found, look for any numbered/bulleted lists
-    if (steps.length === 0) {
-      const allLines = text.split(/\n/).map((line) => line.trim());
-      const listItems = allLines
-        .filter((line) => /^\d+\.|^[-*]/.test(line))
-        .map((line) => {
-          const numbered = /^\d+\.\s*(.+)/.exec(line);
-          const bulleted = /^[-*]\s*(.+)/.exec(line);
-          return numbered?.[1]?.trim() ?? bulleted?.[1]?.trim() ?? "";
-        })
-        .filter((title) => title.length > 0);
-
-      if (listItems.length > 0) {
-        steps = listItems.map((title) => ({ title }));
-      }
     }
 
     // Ensure we have at least one step

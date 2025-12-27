@@ -96,14 +96,22 @@ export function GoalViewer({ goalId, onStepUpdate }: GoalViewerProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {goal.deadline && (
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+        <div className="flex flex-col gap-2 text-muted-foreground text-sm">
+          <div className="flex items-center gap-2">
             <Calendar className="size-4" />
             <span>
-              Deadline: {format(new Date(goal.deadline), "MMM d, yyyy")}
+              Created on {format(new Date(goal.createdAt), "MMM d, yyyy")}
             </span>
           </div>
-        )}
+          {goal.deadline && (
+            <div className="flex items-center gap-2">
+              <Calendar className="size-4" />
+              <span>
+                Deadline: {format(new Date(goal.deadline), "MMM d, yyyy")}
+              </span>
+            </div>
+          )}
+        </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
