@@ -5,7 +5,7 @@ import type { createDocument } from "./ai/tools/create-document";
 import type { getWeather } from "./ai/tools/get-weather";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
 import type { updateDocument } from "./ai/tools/update-document";
-import type { Suggestion } from "./db/schema";
+import type { Goal, Step, Suggestion } from "./db/schema";
 
 export type DataPart = { type: "append-message"; message: string };
 
@@ -54,4 +54,18 @@ export type Attachment = {
   name: string;
   url: string;
   contentType: string;
+};
+
+export type GoalStatus = "not_started" | "in_progress" | "completed";
+
+export type GoalPriority = "low" | "medium" | "high";
+
+export type GoalWithSteps = Goal & {
+  steps: Step[];
+};
+
+export type GoalProgress = {
+  completed: number;
+  total: number;
+  percentage: number;
 };
