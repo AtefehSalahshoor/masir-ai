@@ -1,10 +1,13 @@
 "use client";
 
+import { Target } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { useWindowSize } from "usehooks-ts";
 import { SidebarToggle } from "@/components/sidebar-toggle";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useGoals } from "@/hooks/use-goals";
 import { PlusIcon } from "./icons";
 import { useSidebar } from "./ui/sidebar";
 import { VisibilitySelector, type VisibilityType } from "./visibility-selector";
@@ -13,15 +16,20 @@ function PureChatHeader({
   chatId,
   selectedVisibilityType,
   isReadonly,
+  showGoals,
+  onToggleGoals,
 }: {
   chatId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  showGoals: boolean;
+  onToggleGoals: () => void;
 }) {
   const router = useRouter();
   const { open } = useSidebar();
-
   const { width: windowWidth } = useWindowSize();
+  const { goals } = useGoals(chatId);
+  const goalCount = goals.length;
 
   return (
     <header className="sticky top-0 flex items-center gap-2 bg-background px-2 py-1.5 md:px-2">
@@ -41,6 +49,23 @@ function PureChatHeader({
         </Button>
       )}
 
+      {goalCount > 0 && (
+        <Button
+          className="order-3 h-8 px-2 md:h-fit md:px-2"
+          onClick={onToggleGoals}
+          variant={showGoals ? "default" : "outline"}
+        >
+          <Target className="size-4" />
+          <span className="hidden md:inline">Goals</span>
+          <Badge
+            className="ml-1 bg-background text-foreground"
+            variant="secondary"
+          >
+            {goalCount}
+          </Badge>
+        </Button>
+      )}
+
       {!isReadonly && (
         <VisibilitySelector
           chatId={chatId}
@@ -56,6 +81,7 @@ export const ChatHeader = memo(PureChatHeader, (prevProps, nextProps) => {
   return (
     prevProps.chatId === nextProps.chatId &&
     prevProps.selectedVisibilityType === nextProps.selectedVisibilityType &&
-    prevProps.isReadonly === nextProps.isReadonly
+    prevProps.isReadonly === nextProps.isReadonly &&
+    prevProps.showGoals === nextProps.showGoals
   );
 });
