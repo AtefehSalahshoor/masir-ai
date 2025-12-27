@@ -20,6 +20,7 @@ import {
 import { SparklesIcon } from "./icons";
 import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
+import { MessagePlanAction } from "./message-plan-action";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
@@ -341,6 +342,10 @@ const PurePreviewMessage = ({
 
             return null;
           })}
+
+          {message.role === "assistant" && !isLoading && (
+            <MessagePlanAction chatId={chatId} message={message} />
+          )}
 
           {!isReadonly && (
             <MessageActions

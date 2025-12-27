@@ -699,10 +699,12 @@ export async function getGoalsByChatId({ chatId }: { chatId: string }) {
       .from(goal)
       .where(eq(goal.chatId, chatId))
       .orderBy(desc(goal.createdAt));
-  } catch (_error) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Database error in getGoalsByChatId:", errorMessage);
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get goals by chat id",
+      `Failed to get goals by chat id: ${errorMessage}`,
     );
   }
 }
@@ -1070,10 +1072,12 @@ export async function createGoalWithSteps({
 
       return { goal: createdGoal, steps: createdSteps };
     });
-  } catch (_error) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Database error in createGoalWithSteps:", errorMessage);
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to create goal with steps",
+      `Failed to create goal with steps: ${errorMessage}`,
     );
   }
 }
